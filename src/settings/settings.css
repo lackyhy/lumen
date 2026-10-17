@@ -724,6 +724,21 @@ html.settings-root #root {
   background: rgba(255, 255, 255, 0.12);
 }
 
+/* A player seen before, added to the music sources with a click. */
+.st-chip-add {
+  padding: 3px 10px;
+  border: 0;
+  color: var(--island-fg-muted);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.st-chip-add:hover {
+  color: var(--island-fg);
+  background: rgba(255, 255, 255, 0.14);
+}
+
 .st-chip-input {
   flex: 1;
   min-width: 120px;

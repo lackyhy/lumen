@@ -201,16 +201,13 @@ pub fn spawn_watcher(app: AppHandle) {
 }
 
 /// The player the island shows: the one Windows calls current, unless the
-/// user hid it; then another one, preferring one that's playing.
+/// user hid it or it isn't one of the chosen sources; then another one,
+/// preferring one that's playing.
 fn shown_session(app: &AppHandle) -> windows::core::Result<Option<Session>> {
-    let hidden = settings::read(app, |s| s.players.hidden.clone());
+    let players = settings::read(app, |s| s.players.clone());
     let shown = |s: &Session| {
         s.SourceAppUserModelId()
-            .map(|id| {
-                let id = id.to_string();
-                !hidden.iter().any(|h| *h == id)
-            })
-            .unwrap_or(false)
+            .is_ok_and(|id| players.shows(&id.to_string()))
     };
     let manager = manager()?;
     if let Ok(current) = manager.GetCurrentSession() {

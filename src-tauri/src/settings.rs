@@ -79,6 +79,29 @@ pub struct PlayerPrefs {
     pub hidden: Vec<String>,
     /// The user's names for players; empty means the built-in one.
     pub names: BTreeMap<String, String>,
+    /// Apps music is taken from (Расширенные): app ids or parts of them,
+    /// such as "spotify" or "foobar2000".
+    pub sources: Vec<String>,
+    /// Take music only from `sources`; with none listed, from every player.
+    pub sources_only: bool,
+}
+
+impl PlayerPrefs {
+    /// Whether the island may show what the player `id` plays.
+    pub fn shows(&self, id: &str) -> bool {
+        if self.hidden.iter().any(|h| h == id) {
+            return false;
+        }
+        if !self.sources_only || self.sources.is_empty() {
+            return true;
+        }
+        let id = id.to_lowercase();
+        self.sources.iter().any(|source| {
+            let source = source.trim().to_lowercase();
+            let source = source.strip_suffix(".exe").unwrap_or(&source);
+            !source.is_empty() && id.contains(source)
+        })
+    }
 }
 
 /// Adds a player to the known ones the first time it plays something.
@@ -452,5 +475,27 @@ fn merge(target: &mut Value, patch: Value) {
             }
         }
         (target, patch) => *target = patch,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn sources_match_app_ids_by_part() {
+        let mut players = PlayerPrefs {
+            sources: vec!["Spotify.exe".into(), " music ".into()],
+            ..Default::default()
+        };
+        // Off, every player counts.
+        assert!(players.shows("com.google.Chrome"));
+        players.sources_only = true;
+        assert!(players.shows("Spotify.exe"));
+        assert!(players.shows("com.spotify.client"));
+        assert!(players.shows("com.apple.Music"));
+        assert!(!players.shows("com.google.Chrome"));
+        players.hidden.push("com.apple.Music".into());
+        assert!(!players.shows("com.apple.Music"));
     }
 }

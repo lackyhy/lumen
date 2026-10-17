@@ -202,6 +202,10 @@ export interface PlayerPrefs {
   hidden: string[];
   /** Your names for players; empty means the built-in one. */
   names: Record<string, string>;
+  /** Apps music is taken from (Расширенные): app ids or parts of them, like "spotify". */
+  sources: string[];
+  /** Take music only from `sources`; with none listed, from every player. */
+  sourcesOnly: boolean;
 }
 
 export type CodeBorderColor = "code" | "theme";
@@ -316,7 +320,7 @@ export const DEFAULT_SETTINGS: Settings = {
   discord: { enabled: false, clientId: "", clientSecret: "", voice: true, presence: true },
   updates: { auto: true, install: true },
   media: { volumeSlider: true },
-  players: { known: [], hidden: [], names: {} },
+  players: { known: [], hidden: [], names: {}, sources: [], sourcesOnly: false },
   downloads: { enabled: false },
   games: { stats: false },
   advanced: {

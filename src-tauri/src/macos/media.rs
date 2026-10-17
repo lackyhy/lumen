@@ -261,12 +261,14 @@ fn install_helper(app: &AppHandle) -> Result<PathBuf, String> {
 }
 
 /// The track the island shows: the helper's, unless its player is hidden in
-/// the settings, with the position carried forward while it plays.
+/// the settings or isn't one of the chosen sources, with the position carried
+/// forward while it plays. MediaRemote names only the one player macOS calls
+/// current, so there is no other one to fall back to.
 fn shown_track(app: &AppHandle) -> Option<NowPlaying> {
     let state = app.state::<MediaState>();
     let track = state.track.lock().unwrap();
     let (track, art) = track.as_ref()?;
-    if settings::read(app, |s| s.players.hidden.contains(&track.app)) {
+    if !settings::read(app, |s| s.players.shows(&track.app)) {
         return None;
     }
     let key = format!("{}\u{1f}{}\u{1f}{}", track.app, track.title, track.artist);
